@@ -139,10 +139,16 @@ public class Maze : MonoBehaviour {
             {
                 if (x % 2 != 0)
                     continue;
-                float cx = (x - width) * wall.transform.localScale.z / 2;
+                float cx = (x - width) * wall.transform.localScale.z;
                 float cy = (y - height) * wall.transform.localScale.x;
                 if (wallMap[y / 2, x / 2].WallRight)
                 {
+                    GameObject w = Instantiate(wall, new Vector3(cy, wall.transform.position.y, cx), wall.transform.localRotation, transform);
+                }
+                if (y - 1 > 0 && wallMap[y / 2, x / 2].WallUp)
+                {
+                    cx = (x - width) * wall.transform.localScale.z;
+                    cy = (y - 1 - height) * wall.transform.localScale.x;
                     GameObject w = Instantiate(wall, new Vector3(cy, wall.transform.position.y, cx), wall.transform.localRotation, transform);
                 }
             }
@@ -156,51 +162,19 @@ public class Maze : MonoBehaviour {
                 if (y % 2 != 0)
                     continue;
                 float cx = (x - width) * wall.transform.localScale.z;
-                float cy = (y - height) * wall.transform.localScale.x / 2;
+                float cy = (y - height) * wall.transform.localScale.x;
                 if (wallMap[y / 2, x / 2].WallDown)
                 {
                     GameObject w = Instantiate(wall, new Vector3(cy, wall.transform.position.y, cx), wall.transform.localRotation, transform);
                 }
+                if (x - 1 > 0 && wallMap[y / 2, x / 2].WallLeft)
+                {
+                    cx = (x - 1 - width) * wall.transform.localScale.z;
+                    cy = (y - height) * wall.transform.localScale.x;
+                    GameObject w = Instantiate(wall, new Vector3(cy, wall.transform.position.y, cx), wall.transform.localRotation, transform);
+                }
             }
         }
-        /*
-        if (y % 2 != 0)
-        {
-            continue;
-        }
-        for (int x = 2; x < width * 2 - 4; x++)
-        {
-            if (x % 2 != 0 || !CoordValid(x, y))
-            {
-                continue;
-            }
-            float coordX = 0;
-            float coordY = 0;
-            if (wallMap[y / 2, x / 2].WallUp)
-            {
-                coordX = ((x - width / 2) * wall.transform.localScale.z);
-                coordY = ((y - 1 - height / 2) * wall.transform.localScale.x);
-                GameObject w = Instantiate(wall, new Vector3(coordY, wall.transform.position.y, coordX), wall.transform.localRotation, transform);
-            }
-            if (wallMap[y / 2, x / 2].WallDown)
-            {
-                coordX = ((x - width / 2) * wall.transform.localScale.z);
-                coordY = ((y + 1 - height / 2) * wall.transform.localScale.x);
-                GameObject w = Instantiate(wall, new Vector3(coordY, wall.transform.position.y, coordX), wall.transform.localRotation, transform);
-            }
-            if (wallMap[y / 2, x / 2].WallLeft)
-            {
-                coordX = ((x - 1 - width / 2) * wall.transform.localScale.z);
-                coordY = ((y - height / 2) * wall.transform.localScale.x);
-                GameObject w = Instantiate(wall, new Vector3(coordY, wall.transform.position.y, coordX), wall.transform.localRotation, transform);
-            }
-            if (wallMap[y / 2, x / 2].WallRight)
-            {
-                coordX = ((x + 1 - width / 2) * wall.transform.localScale.z);
-                coordY = ((y - height / 2) * wall.transform.localScale.x);
-                GameObject w = Instantiate(wall, new Vector3(coordY, wall.transform.position.y, coordX), wall.transform.localRotation, transform);
-            }
-        }*/
         surface.BuildNavMesh();
         Instantiate(player);
     }

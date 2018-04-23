@@ -17,6 +17,9 @@ public class Maze : MonoBehaviour {
 
     [SerializeField]
     float stepHeight;
+    
+    Vector3 startPosition;
+    Vector3 endPosition;
 
     public GameObject ground;
     public GameObject wall;
@@ -33,12 +36,9 @@ public class Maze : MonoBehaviour {
         return x > -1 && y > -1 && x < width && y < height;
     }
 
-    int CarvePassageFrom(int x, int y)
+    int[][] SetDirections()
     {
-        visited[y, x] = true;
-        int v = 1;
         int[][] directions = new int[4][];
-        int[][] opposites = new int[4][];
         //Nord
         directions[0] = new int[2];
         directions[0][0] = 0;
@@ -56,6 +56,18 @@ public class Maze : MonoBehaviour {
         directions[3][0] = -1;
         directions[3][1] = 0;
 
+        return directions;
+    }
+
+    int CarvePassageFrom(int x, int y)
+    {
+        if (y != 0 && x != 0 && Vector3.Distance(startPosition, endPosition) < Vector3.Distance(startPosition, new Vector3(y, 0, x)))
+            endPosition = new Vector3(y, 0, x);
+        visited[y, x] = true;
+        int v = 1;
+
+        int[][] directions = SetDirections();
+
         while (directions.Length > 0)
         {
             int dir = Random.Range(0, directions.Length);
@@ -64,7 +76,6 @@ public class Maze : MonoBehaviour {
 
             if (CoordValid(x + cx, y + cy) && !visited[y + cy, x + cx])
             {
-                Debug.Log("Destroying wall.");
                 wallMap[y, x].DestroyWall(cx, cy);
                 wallMap[y + cy, x + cx].DestroyWall(-cx, -cy);
                 v += CarvePassageFrom(x + cx, y + cy);
@@ -78,10 +89,11 @@ public class Maze : MonoBehaviour {
 
     public void InitMap()
     {
-        Debug.Log("Initing map data structure... ");
         map = new int[height, width];
         wallMap = new Map[height, width];
         visited = new bool[height, width];
+        startPosition = new Vector3(10, 0, 10);
+        endPosition = startPosition;
 
         int i = 0;
 
@@ -96,34 +108,10 @@ public class Maze : MonoBehaviour {
             }
         }
 
-        Debug.Log("Setting the walls...");
-
         int startx = 0;
         int starty = 0;
 
-        int allvisited = width * height;
-        int casevisited = 0;
-        
-        while (casevisited < allvisited) {
-            bool found = false;
-            for (int y = 0; y < height; ++y)
-            {
-                for (int x = 0; x < width; ++x)
-                {
-                    if (!visited[y,x])
-                    {
-                        startx = x;
-                        starty = y;
-                        found = true;
-                        break;
-                    }
-                }
-                if (found)
-                    break;
-            }
-            casevisited += CarvePassageFrom(startx, starty);
-        }
-        
+        CarvePassageFrom(startx, starty);
     }
 
 	public void SetMeshes()
@@ -175,8 +163,13 @@ public class Maze : MonoBehaviour {
                 }
             }
         }
+
         surface.BuildNavMesh();
-        Instantiate(player);
+        GameObject p = Instantiate(player);
+        p.transform.position = startPosition;
+        p.GetComponent<BoyBehaviour>().Init();
+        Debug.Log(endPosition);
+        p.GetComponent<BoyBehaviour>().MoveToDestination(endPosition);
     }
 
     public class Map

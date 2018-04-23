@@ -9,19 +9,22 @@ public class BoyBehaviour : MonoBehaviour {
 
     public NavMeshAgent agent;
 
-    void Start()
+    public void Init()
     {
         cam = Camera.main;
         agent = GetComponent<NavMeshAgent>();
+        agent.enabled = false;
     }
 
 	// Update is called once per frame
 	void Update () {
-        ClickMovement();
+        //ClickMovement();
 	}
 
     void ClickMovement()
     {
+        if (!agent.enabled)
+            agent.enabled = true;
         if (Input.GetMouseButtonDown(0))
         {
             Ray ray = cam.ScreenPointToRay(Input.mousePosition);
@@ -32,5 +35,12 @@ public class BoyBehaviour : MonoBehaviour {
                 agent.SetDestination(hit.point);
             }
         }
+    }
+
+    public void MoveToDestination(Vector3 destination)
+    {
+        if (!agent.enabled)
+            agent.enabled = true;
+        agent.SetDestination(destination);
     }
 }

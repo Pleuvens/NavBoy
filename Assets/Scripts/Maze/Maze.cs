@@ -61,8 +61,8 @@ public class Maze : MonoBehaviour {
 
     int CarvePassageFrom(int x, int y)
     {
-        if (y != 0 && x != 0 && Vector3.Distance(startPosition, endPosition) < Vector3.Distance(startPosition, new Vector3(y, 0, x)))
-            endPosition = new Vector3(y, 0, x);
+        if (y != 0 && x != 0 && Vector3.Distance(startPosition, endPosition) < Vector3.Distance(startPosition, new Vector3(y * scaleY, startPosition.y, x * scaleX)))
+            endPosition = new Vector3(y * scaleY, 0, x * scaleX);
         visited[y, x] = true;
         int v = 1;
 

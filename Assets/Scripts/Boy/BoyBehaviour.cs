@@ -7,6 +7,10 @@ public class BoyBehaviour : MonoBehaviour {
 
     public Camera cam;
 
+    Vector3 destination;
+
+    public float distance = Mathf.Infinity;
+
     public NavMeshAgent agent;
 
     public void Init()
@@ -19,7 +23,9 @@ public class BoyBehaviour : MonoBehaviour {
 	// Update is called once per frame
 	void Update () {
         //ClickMovement();
-	}
+        Debug.Log(Vector3.Distance(destination, transform.position));
+        distance = Vector3.Distance(destination, transform.position);
+    }
 
     void ClickMovement()
     {
@@ -42,5 +48,6 @@ public class BoyBehaviour : MonoBehaviour {
         if (!agent.enabled)
             agent.enabled = true;
         agent.SetDestination(destination);
+        this.destination = destination;
     }
 }

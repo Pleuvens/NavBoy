@@ -5,198 +5,143 @@ using UnityEngine.AI;
 
 public class Maze : MonoBehaviour {
 
-    [SerializeField]
-    int width;
-    [SerializeField]
-    int height;
-
-    [SerializeField]
-    int scaleX;
-    [SerializeField]
-    int scaleY;
-
-    [SerializeField]
-    float stepHeight;
-    
-    Vector3 startPosition;
-    Vector3 endPosition;
-
-    public GameObject ground;
-    public GameObject wall;
+    public uint width;
+    public uint height;
+    public uint xStart;
+    public uint yStart;
+    private uint xEnd;
+    private uint yEnd;
+    private int scaleX = 4;
+    private int scaleY = 4;
+    private Cell[,] maze;
+    private Vector2 posStart;
     public GameObject player;
-
+    public GameObject wall;
+    public GameObject ground;
+    public GameObject end;
     public NavMeshSurface surface;
 
-    int[,] map;
-    Map[,] wallMap;
-    bool[,] visited;
 
-    bool CoordValid(int x, int y)
-    {
-        return x > -1 && y > -1 && x < width && y < height;
-    }
-
-    int[][] SetDirections()
-    {
-        int[][] directions = new int[4][];
-        //Nord
-        directions[0] = new int[2];
-        directions[0][0] = 0;
-        directions[0][1] = -1;
-        //Sud
-        directions[1] = new int[2];
-        directions[1][0] = 0;
-        directions[1][1] = 1;
-        //Est
-        directions[2] = new int[2];
-        directions[2][0] = 1;
-        directions[2][1] = 0;
-        //Ouest
-        directions[3] = new int[2];
-        directions[3][0] = -1;
-        directions[3][1] = 0;
-
-        return directions;
-    }
-
-    int CarvePassageFrom(int x, int y)
-    {
-        if (y != 0 && x != 0 && Vector3.Distance(startPosition, endPosition) < Vector3.Distance(startPosition, new Vector3(y * scaleY, startPosition.y, x * scaleX)))
-            endPosition = new Vector3(y * scaleY, 0, x * scaleX);
-        visited[y, x] = true;
-        int v = 1;
-
-        int[][] directions = SetDirections();
-
-        while (directions.Length > 0)
-        {
-            int dir = Random.Range(0, directions.Length);
-            int cx = directions[dir][0];
-            int cy = directions[dir][1];
-
-            if (CoordValid(x + cx, y + cy) && !visited[y + cy, x + cx])
-            {
-                wallMap[y, x].DestroyWall(cx, cy);
-                wallMap[y + cy, x + cx].DestroyWall(-cx, -cy);
-                v += CarvePassageFrom(x + cx, y + cy);
-            }
-            var tmp = new List<int[]>(directions);
-            tmp.RemoveAt(dir);
-            directions = tmp.ToArray();
-        }
-        return v;
-    }
-
+    // Use this for initialization
     public void InitMap()
     {
-        map = new int[height, width];
-        wallMap = new Map[height, width];
-        visited = new bool[height, width];
-        startPosition = new Vector3(10, 0, 10);
-        endPosition = startPosition;
-
-        int i = 0;
-
-        for (int y = 0; y < height; ++y)
-        {
-            for (int x = 0; x < width; ++x)
+        xEnd = (uint)Random.Range(0, width);
+        yEnd = (uint)Random.Range(0, height);
+        maze = new Cell[width, height];
+        posStart = new Vector2(xStart, yStart);
+        for (uint x = 0; x < width; x++)
+            for (uint y = 0; y < height; y++)
             {
-                map[y, x] = i;
-                wallMap[y, x] = new Map();
-                visited[y, x] = false;
-                i += 1;
+                if (x == xStart && y == yStart)
+                    maze[x, y] = new Cell(Type.START);
+                else if (x == xEnd && y == yEnd)
+                    maze[x, y] = new Cell(Type.END);
+                else
+                    maze[x, y] = new Cell();
             }
-        }
-
-        int startx = 0;
-        int starty = 0;
-
-        CarvePassageFrom(startx, starty);
+        generate();
+        PrintMaze();
     }
 
-	public void SetMeshes()
+    private bool verticalWall(uint x1, uint x2, uint y)
     {
-        GameObject cloneGround = Instantiate(ground, new Vector3(-wall.transform.localScale.x, 0 , -wall.transform.localScale.z), Quaternion.identity, transform);
-        cloneGround.transform.localScale = new Vector3(height * scaleY * 2 - wall.transform.localScale.x, 0, width * scaleX * 2 - wall.transform.localScale.z);
+        if (x2 < width && x1 < width && x2 >= 0 && x1 >= 0 && maze[x1, y].isLinked((uint)x2, y))
+            return false;
 
-        for (int y = 0; y < height * 2; y++)
+        return true;
+    }
+
+    private bool horizontalWall(uint x, uint y1, uint y2)
+    {
+        if (y2 < height && y1 < height && y2 >= 0 && y1 >= 0 && maze[x, y1].isLinked(x, (uint)y2))
+            return false;
+
+        return true;
+    }
+
+    private void PrintMaze()
+    {
+        int count = 32;
+
+        GameObject G = Instantiate(ground, new Vector3(width * scaleX / 2 - 1, 0, height * scaleY / 2 - 1), ground.transform.rotation, transform);
+        G.transform.localScale = new Vector3(G.transform.localScale.x * scaleX, 0, G.transform.localScale.z * scaleY);
+        Instantiate(wall, new Vector3(-1, wall.transform.localScale.y / 2, -1), wall.transform.rotation, transform);
+
+        for (uint x = 0; x < width * 4; x++)
         {
-            if (y % 2 != 0)
-                continue;
-            for (int x = 0; x < width * 2; ++x)
-            {
-                if (x % 2 != 0)
-                    continue;
-                float cx = (x - width) * wall.transform.localScale.z;
-                float cy = (y - height) * wall.transform.localScale.x;
-                if (wallMap[y / 2, x / 2].WallRight)
-                {
-                    GameObject w = Instantiate(wall, new Vector3(cy, wall.transform.position.y, cx), wall.transform.localRotation, transform);
-                }
-                if (y - 1 > 0 && wallMap[y / 2, x / 2].WallUp)
-                {
-                    cx = (x - width) * wall.transform.localScale.z;
-                    cy = (y - 1 - height) * wall.transform.localScale.x;
-                    GameObject w = Instantiate(wall, new Vector3(cy, wall.transform.position.y, cx), wall.transform.localRotation, transform);
-                }
-            }
-        }
-        for (int x = 0; x < width * 2; x++)
-        {
-            if (x % 2 != 0)
-                continue;
-            for (int y = 0; y < height * 2; ++y)
-            {
-                if (y % 2 != 0)
-                    continue;
-                float cx = (x - width) * wall.transform.localScale.z;
-                float cy = (y - height) * wall.transform.localScale.x;
-                if (wallMap[y / 2, x / 2].WallDown)
-                {
-                    GameObject w = Instantiate(wall, new Vector3(cy, wall.transform.position.y, cx), wall.transform.localRotation, transform);
-                }
-                if (x - 1 > 0 && wallMap[y / 2, x / 2].WallLeft)
-                {
-                    cx = (x - 1 - width) * wall.transform.localScale.z;
-                    cy = (y - height) * wall.transform.localScale.x;
-                    GameObject w = Instantiate(wall, new Vector3(cy, wall.transform.position.y, cx), wall.transform.localRotation, transform);
-                }
-            }
+            Instantiate(wall, new Vector3(-1, wall.transform.localScale.y / 2, x), wall.transform.rotation, transform);
         }
 
+        for (uint y = 0; y < height; y++)
+        {
+            Instantiate(wall, new Vector3(-1, wall.transform.localScale.y / 2, y), wall.transform.rotation, transform);
+            Instantiate(wall, new Vector3(-1, wall.transform.localScale.y / 2, y * scaleY - 1), wall.transform.rotation, transform);
+            Instantiate(wall, new Vector3(-1, wall.transform.localScale.y / 2, y * scaleY + 2), wall.transform.rotation, transform);
+            Instantiate(wall, new Vector3(-1, wall.transform.localScale.y / 2, y * scaleY + 3), wall.transform.rotation, transform);
+
+
+            for (uint x = 0; x < width; x++)
+            {
+                if (verticalWall(x, x + 1, y))
+                {
+                    Instantiate(wall, new Vector3(x * scaleX + 3, wall.transform.localScale.y / 2, y * scaleY + 1), wall.transform.rotation, transform);
+                    Instantiate(wall, new Vector3(x * scaleX + 3, wall.transform.localScale.y / 2, y * scaleY), wall.transform.rotation, transform);
+                    Instantiate(wall, new Vector3(x * scaleX + 3, wall.transform.localScale.y / 2, y * scaleY + 2), wall.transform.rotation, transform);
+                }
+                if (horizontalWall(x, y, y + 1))
+                {
+                    Instantiate(wall, new Vector3(x * scaleX + 1, wall.transform.localScale.y / 2, y * scaleY + 3), wall.transform.rotation, transform);
+                    Instantiate(wall, new Vector3(x * scaleX + 2, wall.transform.localScale.y / 2, y * scaleY + 3), wall.transform.rotation, transform);
+                    Instantiate(wall, new Vector3(x * scaleX, wall.transform.localScale.y / 2, y * scaleY + 3), wall.transform.rotation, transform);
+                }
+                Instantiate(wall, new Vector3(x * scaleX + 3, wall.transform.localScale.y / 2, y * scaleY + 3), wall.transform.rotation, transform);
+            }
+        }
+        
         surface.BuildNavMesh();
-        GameObject p = Instantiate(player);
-        p.transform.position = startPosition;
-        p.GetComponent<BoyBehaviour>().Init();
-        Debug.Log(endPosition);
-        p.GetComponent<BoyBehaviour>().MoveToDestination(endPosition);
+        GameObject E = Instantiate(end, new Vector3((xEnd * scaleX + 2), 0, (yEnd * scaleY + 1)), end.transform.rotation, transform);
+        GameObject P = Instantiate(player, new Vector3((xStart * scaleX + 2), 0, (yStart * scaleY + 1)), player.transform.rotation);
+        P.GetComponent<BoyBehaviour>().Init();
+        P.GetComponent<BoyBehaviour>().MoveToDestination(E.transform.position);
     }
 
-    public class Map
+    public void generate()
     {
-        public bool WallUp;
-        public bool WallDown;
-        public bool WallLeft;
-        public bool WallRight;
+        uint x = (uint)Random.Range(0, (int)width);
+        uint y = (uint)Random.Range(0, (int)height);
 
-        public Map()
-        {
-            WallUp = true;
-            WallDown = true;
-            WallLeft = true;
-            WallRight = true;
-        }
+        generateRec(x, y);
+    }
+    private void generateRec(uint x, uint y)
+    {
+        if (maze[x, y].getVisited())
+            return;
 
-        public void DestroyWall(int Xoffset, int Yoffset)
+        maze[x, y].setVisited(true);
+        if (maze[x, y].getType() == Type.START || maze[x, y].getType() == Type.END)
+            return;
+        List<Vector2> n = getNotVisitedNeighbor(x, y);
+        while (n.Count != 0)
         {
-            if (Xoffset < 0)
-                WallLeft = false;
-            if (Xoffset > 0)
-                WallRight = false;
-            if (Yoffset < 0)
-                WallUp = false;
-            if (Yoffset > 0)
-                WallDown = false;
+            int i = Random.Range(0, n.Count);
+            Vector2 t = n[i];
+            maze[x, y].addLink(t);
+            maze[(uint)t.x, (uint)t.y].addLink(new Vector2(x, y));
+            generateRec((uint)t.x, (uint)t.y);
+            n = getNotVisitedNeighbor(x, y);
         }
+    }
+    private List<Vector2> getNotVisitedNeighbor(uint x, uint y)
+    {
+        List<Vector2> n = new List<Vector2>();
+        if (x > 0 && !maze[x - 1, y].getVisited())
+            n.Add(new Vector2(x - 1, y));
+        if (x < width - 1 && !maze[x + 1, y].getVisited())
+            n.Add(new Vector2(x + 1, y));
+        if (y > 0 && !maze[x, y - 1].getVisited())
+            n.Add(new Vector2(x, y - 1));
+        if (y < height - 1 && !maze[x, y + 1].getVisited())
+            n.Add(new Vector2(x, y + 1));
+        return n;
     }
 }

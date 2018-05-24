@@ -11,14 +11,13 @@ public class FlowManager : MonoBehaviour {
 	// Use this for initialization
 	void Start () {
         maze.InitMap();
-        maze.SetMeshes();
 	}
 	
 	// Update is called once per frame
 	void Update () {
 		if (player != null)
         {
-            if (player.GetComponent<BoyBehaviour>().distance < 40)
+            if (player.GetComponent<BoyBehaviour>().distance < 1)
             {
                 for (int i = 0; i < mazeHolder.transform.childCount; i++)
                 {
@@ -26,7 +25,6 @@ public class FlowManager : MonoBehaviour {
                     Destroy(player);
                 }
                 maze.InitMap();
-                maze.SetMeshes();
             }
         } else
         {

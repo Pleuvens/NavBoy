@@ -22,8 +22,6 @@ public class BoyBehaviour : MonoBehaviour {
 
 	// Update is called once per frame
 	void Update () {
-        //ClickMovement();
-        Debug.Log(Vector3.Distance(destination, transform.position));
         distance = Vector3.Distance(destination, transform.position);
     }
 

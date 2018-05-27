@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
 public class FlowManager : MonoBehaviour {
 
@@ -19,12 +20,7 @@ public class FlowManager : MonoBehaviour {
         {
             if (player.GetComponent<BoyBehaviour>().distance < 1)
             {
-                for (int i = 0; i < mazeHolder.transform.childCount; i++)
-                {
-                    Destroy(mazeHolder.transform.GetChild(i).gameObject);
-                    Destroy(player);
-                }
-                maze.InitMap();
+                SceneManager.LoadScene(SceneManager.GetActiveScene().name);
             }
         } else
         {

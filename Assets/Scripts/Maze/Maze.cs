@@ -97,10 +97,10 @@ public class Maze : MonoBehaviour {
                 Instantiate(wall, new Vector3(x * scaleX + 3, wall.transform.localScale.y / 2, y * scaleY + 3), wall.transform.rotation, transform);
             }
         }
-        
-        surface.BuildNavMesh();
+
         GameObject E = Instantiate(end, new Vector3((xEnd * scaleX + 2), 0, (yEnd * scaleY + 1)), end.transform.rotation, transform);
         GameObject P = Instantiate(player, new Vector3((xStart * scaleX + 2), 0, (yStart * scaleY + 1)), player.transform.rotation);
+        surface.BuildNavMesh();
         P.GetComponent<BoyBehaviour>().Init();
         P.GetComponent<BoyBehaviour>().MoveToDestination(E.transform.position);
     }

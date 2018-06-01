@@ -13,6 +13,8 @@ public class BoyBehaviour : MonoBehaviour {
 
     public NavMeshAgent agent;
 
+    public Animator animator;
+
     public void Init()
     {
         cam = Camera.main;
@@ -45,6 +47,7 @@ public class BoyBehaviour : MonoBehaviour {
     {
         if (!agent.enabled)
             agent.enabled = true;
+        animator.SetBool("run", true);
         agent.SetDestination(destination);
         this.destination = destination;
     }

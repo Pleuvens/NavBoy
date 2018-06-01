@@ -69,7 +69,12 @@ public class Maze : MonoBehaviour {
 
         for (uint x = 0; x < width * 4; x++)
         {
-            Instantiate(wall, new Vector3(-1, wall.transform.localScale.y / 2, x), wall.transform.rotation, transform);
+            Instantiate(wall, new Vector3(x, wall.transform.localScale.y / 2, -1), wall.transform.rotation, transform);
+        }
+
+        for (uint y = 0; y < height * 4; y++)
+        {
+            Instantiate(wall, new Vector3(-1, wall.transform.localScale.y / 2, y), wall.transform.rotation, transform);
         }
 
         for (uint y = 0; y < height; y++)

@@ -20,11 +20,28 @@ public class Maze : MonoBehaviour {
     public GameObject ground;
     public GameObject end;
     public NavMeshSurface surface;
+    public Camera cam;
 
+    [System.Serializable]
+    public struct Theme
+    {
+        public Color color;
+        public Material wall;
+        public Material ground;
+        public Material player;
+    }
+
+    public List<Theme> themes;
 
     // Use this for initialization
     public void InitMap()
     {
+        int r_theme = Random.Range(0, themes.Count);
+        player.transform.GetChild(1).GetComponent<SkinnedMeshRenderer>().material = themes[r_theme].player;
+        wall.GetComponent<MeshRenderer>().material = themes[r_theme].wall;
+        ground.GetComponent<MeshRenderer>().material = themes[r_theme].ground;
+        cam.backgroundColor = themes[r_theme].color;
+
         xEnd = (uint)Random.Range(0, width);
         yEnd = (uint)Random.Range(0, height);
         maze = new Cell[width, height];
@@ -63,8 +80,8 @@ public class Maze : MonoBehaviour {
     {
         int count = 32;
 
-        GameObject G = Instantiate(ground, new Vector3(width * scaleX / 2 - 1, 0, height * scaleY / 2 - 1), ground.transform.rotation, transform);
-        G.transform.localScale = new Vector3(G.transform.localScale.x * scaleX, 0, G.transform.localScale.z * scaleY);
+        GameObject G = Instantiate(ground, new Vector3(width * scaleX / 2 - 1, -0.5f, height * scaleY / 2 - 1), ground.transform.rotation, transform);
+        G.transform.localScale = new Vector3(G.transform.localScale.x * scaleX, 1, G.transform.localScale.z * scaleY);
         Instantiate(wall, new Vector3(-1, wall.transform.localScale.y / 2, -1), wall.transform.rotation, transform);
 
         for (uint x = 0; x < width * 4; x++)

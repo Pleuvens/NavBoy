@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.AI;
+using UnityEditor.ShaderGraph;
 
 public class Maze : MonoBehaviour {
 
@@ -38,6 +39,7 @@ public class Maze : MonoBehaviour {
     {
         int r_theme = Random.Range(0, themes.Count);
         player.transform.GetChild(1).GetComponent<SkinnedMeshRenderer>().material = themes[r_theme].player;
+        end.GetComponent<Renderer>().sharedMaterial.SetColor("Color_E54BD31A", themes[r_theme].player.color);
         wall.GetComponent<MeshRenderer>().material = themes[r_theme].wall;
         ground.GetComponent<MeshRenderer>().material = themes[r_theme].ground;
         cam.backgroundColor = themes[r_theme].color;

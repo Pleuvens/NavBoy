@@ -43,8 +43,8 @@ public class Maze : MonoBehaviour {
         ground.GetComponent<MeshRenderer>().material = themes[r_theme].ground;
         cam.backgroundColor = themes[r_theme].color;
 
-        xEnd = (uint)Random.Range(0, width);
-        yEnd = (uint)Random.Range(0, height);
+        xEnd = (uint)Random.Range(0, width - 1);
+        yEnd = (uint)Random.Range(0, height - 1);
         maze = new Cell[width, height];
         posStart = new Vector2(xStart, yStart);
         for (uint x = 0; x < width; x++)
@@ -79,8 +79,6 @@ public class Maze : MonoBehaviour {
 
     private void PrintMaze()
     {
-        int count = 32;
-
         GameObject G = Instantiate(ground, new Vector3(width * scaleX / 2 - 1, -0.5f, height * scaleY / 2 - 1), ground.transform.rotation, transform);
         G.transform.localScale = new Vector3(G.transform.localScale.x * scaleX, 1, G.transform.localScale.z * scaleY);
         Instantiate(wall, new Vector3(-1, wall.transform.localScale.y / 2, -1), wall.transform.rotation, transform);
@@ -132,6 +130,12 @@ public class Maze : MonoBehaviour {
     {
         uint x = (uint)Random.Range(0, (int)width);
         uint y = (uint)Random.Range(0, (int)height);
+
+        while (x == xStart || y == yStart )
+        {
+            x = (uint)Random.Range(0, (int)width);
+            y = (uint)Random.Range(0, (int)height);
+        }
 
         generateRec(x, y);
     }
